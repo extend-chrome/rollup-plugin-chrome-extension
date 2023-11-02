@@ -34,6 +34,15 @@ self.addEventListener('fetch', (fetchEvent) => {
  * https://bugs.chromium.org/p/chromium/issues/detail?id=1247690#c_ts1631117342
  */
 async function sendToServer(url: URL): Promise<Response> {
+	if (url.href.includes('/_favicon/')) {
+		const response = await fetch(url.href)
+		return new Response(response.body, {
+			headers: {
+				'Content-Type': response.headers.get('Content-Type') ?? 'text/javascript',
+			},
+		})
+	}
+
   // change the url to point to the dev server
   url.protocol = 'http:'
   url.host = 'localhost'
