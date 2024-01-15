@@ -18,9 +18,10 @@ declare const __SERVER_PORT__: string
 /* -------- REDIRECT FETCH TO THE DEV SERVER ------- */
 
 const ownOrigin = new URL(chrome.runtime.getURL('/')).origin
+const ignoreURLPaths = ['/_favicon/']
 self.addEventListener('fetch', (fetchEvent) => {
   const url = new URL(fetchEvent.request.url)
-  if (url.origin === ownOrigin) {
+  if (url.origin === ownOrigin && !ignoreURLPaths.some(p => url.href.includes(p))) {
     fetchEvent.respondWith(sendToServer(url))
   }
 })
@@ -34,15 +35,6 @@ self.addEventListener('fetch', (fetchEvent) => {
  * https://bugs.chromium.org/p/chromium/issues/detail?id=1247690#c_ts1631117342
  */
 async function sendToServer(url: URL): Promise<Response> {
-	if (url.href.includes('/_favicon/')) {
-		const response = await fetch(url.href)
-		return new Response(response.body, {
-			headers: {
-				'Content-Type': response.headers.get('Content-Type') ?? 'text/javascript',
-			},
-		})
-	}
-
   // change the url to point to the dev server
   url.protocol = 'http:'
   url.host = 'localhost'
